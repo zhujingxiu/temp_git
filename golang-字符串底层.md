@@ -15,7 +15,21 @@ type string string
 
 
 ## 2. string 数据结构
-底层数据结构在reflect.StringHeader中定义
+源码包`src/runtime/string.go:stringStruct` 中的定义为
+
+```
+type stringStruct struct {
+	str unsafe.Pointer
+	len int
+}
+```
+> 字符串其实是一个结构体，有两个私有成员：一个指针，一个int型的长度
+> - stringStruct.str：字符串的首地址
+> - stringStruct.len：字符串的长度
+>> `Go SDK v1.12.7` `src/runtime/string.go` 218~221
+
+
+另外，在reflect.StringHeader中对其运行时表现也有定义
 ```
 // StringHeader is the runtime representation of a string.
 // It cannot be used safely or portably and its representation may
@@ -35,7 +49,34 @@ type StringHeader struct {
 >> `Go SDK v1.12.7` `src/reflect/value.go` 1877~1886
 
 ## 3. string 赋值操作
-字符串的赋值操作也就是reflect.StringHeader结构体的复制过程，并不会涉及底层字节数组的复制。字符串赋值只是复制了数据地址和对应的长度，而不会导致底层数据的复制
+string在runtime包中就是stringStruct，对外呈现叫做string。构建过程是先跟据字符串构建stringStruct，再转换成string。
+```
+//go:nosplit
+func gostringnocopy(str *byte) string { 				// 根据字符串地址构建string
+    ss := stringStruct{str: unsafe.Pointer(str), len: findnull(str)} 	// 先构造stringStruct
+    s := *(*string)(unsafe.Pointer(&ss))                             	// 再将stringStruct转换成string
+    return s
+}
+```
+>> `Go SDK v1.12.7` `src/runtime/string.go` 470~475
+```
+var str string
+str = "hello world"
+```
+
+而在反射中，字符串的赋值操作也就是reflect.StringHeader结构体的复制过程，并不会涉及底层字节数组的复制。字符串赋值只是复制了数据地址和对应的长度，而不会导致底层数据的复制
+```
+    str := "hello, world"
+    fmt.Println(str)
+    fmt.Println(&str)
+    
+    data := [...] byte{'G','o'}
+    hdr :=(*reflect.StringHeader)(unsafe.Pointer(&str))
+    hdr.Data = uintptr(unsafe.Pointer(&data[0]))
+    hdr.Len = len(data)
+    fmt.Println(str)
+    fmt.Println(&str)
+```
 
 ## 4. string 拼接操作
 
@@ -43,10 +84,9 @@ type StringHeader struct {
 
 ## 6. 几点疑问
 ### 6.1 为什么字符串不允许修改
-- 在Go的实现中，string不包含内存空间，只有一个指向内存的指针，这样做的好处是string变得非常轻量，可以很方便的进行传递而不用担心内存拷贝。string通常指向字符串字面量（字符序列），而字符串字面量存储位置是只读段，而不是堆或栈上，所以对象不可以修改
-### 6.2 []byte转换成string一定会拷贝内存吗
-- 
-### 6.3 string和[]byte如何取舍
+- 在Go的实现中，string是没有自己的内存空间，只有一个指向内存的指针，这样做的好处是string变得非常轻量，可以很方便的进行传递而不用担心内存拷贝。string常量会在编译期分配到只读段，对应数据地址不可写入，并且相同的string常量不会重复存储
+
+### 6.2 string和[]byte如何取舍
 因为string直观，在实际应用中还是大量存在，在偏底层的实现中[]byte使用更多
 - string 擅长的场景：
   - 需要字符串比较的场景
