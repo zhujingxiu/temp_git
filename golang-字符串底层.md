@@ -81,6 +81,19 @@ str = "hello world"
 ## 4. string 拼接操作
 
 ## 5. string 其他操作
+主要是strings和strconv两个包
+- strings
+  - strings.Index, strings.LastIndex 首次出现的位置和末次出现的位置
+  - strings.ToLower, strings.ToUpper 转换大小写
+  - strings.HasPrefix, strings.Suffix 前缀后缀
+  - strings.Trim,strings.TrimSpace,strings.TrimLeft,strings.TrimRight 去除首尾字符
+  - strings.Field,strings.Split 按空格或指定子串分割成切片
+  - strings.Count,strings.Repeat,strings.Replace 子串计数，重复和替换
+  - strings.Join 连接成字符串
+- strconv  
+  - strconv.Itoa 整数转字符串
+  - strconv.Atoi 字符串转整数
+- fmt.Sprintf 格式化字符串  
 
 ## 6. 几点疑问
 ### 6.1 为什么字符串不允许修改
@@ -95,3 +108,6 @@ str = "hello world"
   - 修改字符串的场景，尤其是修改粒度为1个字节
   - 函数返回值，需要用nil表示含义的场景
   - 需要切片操作的场景
+### 6.3 []byte和[]rune的区别
+- byte可以理解为是为存储ASCII码的类型别名
+- rune是为了给Unicode编码的字符存储而起的别名
