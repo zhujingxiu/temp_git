@@ -78,9 +78,7 @@ str = "hello world"
     fmt.Println(&str)
 ```
 
-## 4. string 拼接操作
-
-## 5. string 其他操作
+## 4. string 常用操作
 主要是strings和strconv两个包
 - strings
   - strings.Index, strings.LastIndex 首次出现的位置和末次出现的位置
@@ -89,17 +87,20 @@ str = "hello world"
   - strings.Trim,strings.TrimSpace,strings.TrimLeft,strings.TrimRight 去除首尾字符
   - strings.Field,strings.Split 按空格或指定子串分割成切片
   - strings.Count,strings.Repeat,strings.Replace 子串计数，重复和替换
-  - strings.Join 连接成字符串
+  - strings.Join 拼接字符串
+    - `+` 直接连接字符串 
+    - fmt.Sprintf 格式化字符串
+    - bytes.Buffer  大量数据拼接推荐使用
 - strconv  
   - strconv.Itoa 整数转字符串
   - strconv.Atoi 字符串转整数
-- fmt.Sprintf 格式化字符串  
+- 
 
-## 6. 几点疑问
-### 6.1 为什么字符串不允许修改
+## 5. 几点疑问
+### 5.1 为什么字符串不允许修改
 - 在Go的实现中，string是没有自己的内存空间，只有一个指向内存的指针，这样做的好处是string变得非常轻量，可以很方便的进行传递而不用担心内存拷贝。string常量会在编译期分配到只读段，对应数据地址不可写入，并且相同的string常量不会重复存储
 
-### 6.2 string和[]byte如何取舍
+### 5.2 string和[]byte如何取舍
 因为string直观，在实际应用中还是大量存在，在偏底层的实现中[]byte使用更多
 - string 擅长的场景：
   - 需要字符串比较的场景
@@ -108,6 +109,6 @@ str = "hello world"
   - 修改字符串的场景，尤其是修改粒度为1个字节
   - 函数返回值，需要用nil表示含义的场景
   - 需要切片操作的场景
-### 6.3 []byte和[]rune的区别
-- byte可以理解为是为存储ASCII码的类型别名
-- rune是为了给Unicode编码的字符存储而起的别名
+### 5.3 []byte和[]rune的区别
+- byte，等同于int8，可以理解为是用来存储ASCII码的类型别名
+- rune，等同于int32，是为了给Unicode或utf-8编码的字符存储的类型别名
