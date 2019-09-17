@@ -91,16 +91,19 @@ str = "hello world"
     - `+` 直接连接字符串 
     - fmt.Sprintf 格式化字符串
     - bytes.Buffer  大量数据拼接推荐使用
-- strconv  
-  - strconv.Itoa 整数转字符串
-  - strconv.Atoi 字符串转整数
-- 
+- strconv  数据类型转换
+  - strconv.Itoa,strconv.Atoi 整数和字符串的相互转换
+  - strconv.ParseBool("true"),strconv.ParseFloat("3.1415", 64),strconv.ParseInt("-42", 10, 64) Parse类方法：转换字符串为给定类型的值
+  - strconv.FormatBool()、strconv.FormatFloat()、strconv.FormatInt()、strconv.FormatUint() Format类方法：将给定类型格式化为string类型
+  - strconv.AppendBool()、strconv.AppendFloat()、strconv.AppendInt()、strconv.AppendUint() Append类方法：将转换后的结果追加到一个slice中
 
 ## 5. 几点疑问
-### 5.1 为什么字符串不允许修改
+### 5.1 string和[]byte的如何转换
+- []byte转换到string 会首先按切片的长度申请内存，然后构建string，`string.str=内存地址; string.len=切片长度;`,最后拷贝切片数据到新内存空间
+- string转换[]byte,需要申请切片内存空间，然后把string的数据逐个拷贝到切片的新空间
+### 5.2 为什么字符串不允许修改
 - 在Go的实现中，string是没有自己的内存空间，只有一个指向内存的指针，这样做的好处是string变得非常轻量，可以很方便的进行传递而不用担心内存拷贝。string常量会在编译期分配到只读段，对应数据地址不可写入，并且相同的string常量不会重复存储
-
-### 5.2 string和[]byte如何取舍
+### 5.3 string和[]byte如何取舍
 因为string直观，在实际应用中还是大量存在，在偏底层的实现中[]byte使用更多
 - string 擅长的场景：
   - 需要字符串比较的场景
@@ -109,6 +112,21 @@ str = "hello world"
   - 修改字符串的场景，尤其是修改粒度为1个字节
   - 函数返回值，需要用nil表示含义的场景
   - 需要切片操作的场景
-### 5.3 []byte和[]rune的区别
-- byte，等同于int8，可以理解为是用来存储ASCII码的类型别名
-- rune，等同于int32，是为了给Unicode或utf-8编码的字符存储的类型别名
+### 5.4 []byte和[]rune的区别
+```
+// byte is an alias for uint8 and is equivalent to uint8 in all ways. It is
+// used, by convention, to distinguish byte values from 8-bit unsigned
+// integer values.
+type byte = uint8
+
+// rune is an alias for int32 and is equivalent to int32 in all ways. It is
+// used, by convention, to distinguish character values from integer values.
+type rune = int32
+```
+- byte，等同于uint8，可以理解为是用来存储ASCII码的类型别名
+- rune，等同于int32，是为了给Unicode或utf-8编码的字符存储的类型别名，处理含有中文字符串时，推荐使用
+```
+str1 := "hello 世界"
+fmt.Println("rune:", len([]rune(str1)))   // rune:8
+fmt.Println("byte:", len([]byte(str1)))   // byte:12
+```
